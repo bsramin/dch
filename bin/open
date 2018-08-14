@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# @author Ramin Banihashemi <a@ramin.it>
+
+bashfile="$(basename ${BASH_SOURCE:-${0}})"
+source lib/setup/main.sh
+
+#------------------------------------
+
+function openHelper {
+    show "<red>---------------------------------</red>"
+    show "<red>DCH <b>$bashfile</b></red> <light-red>v$version</light-red>"
+    show "<red>---------------------------------</red>"
+    show "<cyan>Use:</cyan>"
+    show "bin/$bashfile [container_hostname] bash(/zsh)\n"
+}
+
+if [ -z $1 ]; then
+    openHelper
+    show "<yellow>Select one from them:</yellow>";
+    dockerhostname
+
+    exit
+fi
+
+setImageName $1
+getContainer
+if [ -z $container ]; then
+    show "\n<red>✗ Container not valid (check if is started)</red>\n";
+    show "<yellow>Select one from them:</yellow>";
+    dockerhostname
+else
+    if [ -z $2 ]; then
+        execute "docker exec -it $container bash";
+    else
+        execute "docker exec -it $container $2";
+    fi
+fi
+

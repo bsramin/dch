@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# @author Ramin Banihashemi <a@ramin.it>
+
+bashfile="$(basename ${BASH_SOURCE:-${0}})"
+source lib/setup/main.sh
+
+#------------------------------------
+
+function projectHelper {
+    show "<red>--------------------------------</red>"
+    show "<red>DCH <b>$bashfile</b></red> <light-red>v$version</light-red>"
+    show "<red>--------------------------------</red>"
+    show "<cyan>Use:</cyan>"
+    show "bin/$bashfile [cmd]"
+    show "  "
+
+    show "<cyan>Commands:</cyan>";
+
+    listfile=$(ls project/custom/* 2> /dev/null | egrep '\.sh$' | xargs -n 1 basename)
+
+    if [ -n "$listfile" ]; then
+        for f in $listfile; do
+            if [ -f project/custom/$f ]; then
+                source project/custom/${f}
+                showHelper "<yellow>${f%%.*}</yellow>" "${DESCRIPTION}"
+            fi
+        done
+        show "\n"
+    else
+        show "\n<red>✗ No commands found</red>"
+    fi
+    show ""
+}
+
+if [ -f project/custom/${1}.sh ]; then
+    if [[ $1 = *"/"* ]]; then
+        show "\n<red>✗ Command not valid</red>"
+    else
+        execfile=${1}
+        shift 1
+        params=''
+        for i in "$@"; do
+            params+="${i} "
+        done
+
+        eval "project/custom/${execfile}.sh go ${params}"
+    fi
+else
+    projectHelper
+fi

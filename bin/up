@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# @author Ramin Banihashemi <a@ramin.it>
+
+bashfile="$(basename ${BASH_SOURCE:-${0}})"
+source lib/setup/main.sh
+
+#------------------------------------
+
+function upHelper {
+    show "<red>---------------------------------</red>"
+    show "<red>DCH <b>$bashfile</b></red> <light-red>v$version</light-red>"
+    show "<red>---------------------------------</red>"
+    show "<cyan>Use:</cyan>"
+    show "bin/$bashfile [--no-upgrade]\n"
+
+    show "<cyan>Options:</cyan>"
+
+    showHelper "<green>-h --help</green>" "This help!"
+    showHelper "<green>-n --no-upgrade</green>" "Start the containers without checking new versions of them"
+    show ""
+}
+
+for arg in "$@"; do
+    shift
+    case "$arg" in
+        "--help")           set -- "$@" "-h" ;;
+        "--no-upgrade")     set -- "$@" "-n" ;;
+        *)                  set -- "$@" "$arg"
+    esac
+done
+
+noupgrade=
+
+OPTIND=1
+while getopts "hn" opt
+do
+    case "$opt" in
+        h ) upHelper; exit 0 ;;
+        n ) noupgrade=1; ;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
+goUp $noupgrade

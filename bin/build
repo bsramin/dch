@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+# @author Ramin Banihashemi <a@ramin.it>
+
+bashfile="$(basename ${BASH_SOURCE:-${0}})"
+source lib/setup/main.sh
+
+#------------------------------------
+
+function buildHelper {
+    show "<red>--------------------------------</red>"
+    show "<red>DCH <b>$bashfile</b></red> <light-red>v$version</light-red>"
+    show "<red>--------------------------------</red>"
+    show "<cyan>Use:</cyan>"
+    show "bin/$bashfile [--nocache] [--clean] [--container container_hostname]"
+    show "  "
+
+    show "<cyan>Options:</cyan>"
+
+    showHelper "<green>-n --nocache</green>" "Build images without cache"
+    showHelper "<green>-c --clean</green>" "Delete all the images before build the new ones"
+    showHelper "<green>-i --container</green>" "Make the build of a singole container"
+
+    show "  "
+}
+
+# Effettuo una normale costruzione dei container (se non ci sono modifiche ai Dockerfile lavora su cache)
+function build {
+    show "<yellow>Builds the containers</yellow>";
+    execute "docker-compose $composefiles --project-name $docker_namespace build $1"
+    show "<green>✓ Done</green>";
+}
+
+# Effettuo una normale costruzione dei container (escludendo la cache)
+function buildNoCache {
+    show "<yellow>Builds the containers without using the cache</yellow>";
+    execute "docker-compose $composefiles --project-name $docker_namespace build --no-cache $1"
+    show "<green>✓ Done</green>";
+}
+
+# Costruisco tutti i container forzando la rimozione prima
+function buildClean {
+    show "<yellow>Builds the containers forcing removal first</yellow>";
+    execute "docker-compose $composefiles --project-name $docker_namespace build --force-rm $1"
+    show "<green>✓ Done</green>";
+}
+
+# Costruisco tutti i container forzando la rimozione prima e ricostruendo senza cache
+function buildCleanNoCache {
+    show "<yellow>Builds the containers without using the cache and forcing removal first</yellow>";
+    execute "docker-compose $composefiles --project-name $docker_namespace build --force-rm --no-cache $1"
+    show "<green>✓ Done</green>";
+}
+
+
+for arg in "$@"; do
+    shift
+    case "$arg" in
+    "--help")           set -- "$@" "-h" ;;
+    "--nocache")        set -- "$@" "-n" ;;
+    "--clean")          set -- "$@" "-c" ;;
+    "--container")      set -- "$@" "-i" ;;
+    *)                  set -- "$@" "$arg"
+    esac
+done
+
+cmd_nocache=false
+cmd_clean=false
+cmd_container=
+
+OPTIND=1
+while getopts "hnci:" opt
+do
+    case "$opt" in
+        h ) buildHelper; exit 0 ;;
+        n ) cmd_nocache=true; ;;
+        c ) cmd_clean=true; ;;
+        i ) cmd_container=$OPTARG ;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
+if $cmd_nocache && $cmd_clean; then
+    buildCleanNoCache
+elif $cmd_nocache && ! $cmd_clean; then
+    buildNoCache
+elif ! $cmd_nocache && $cmd_clean; then
+    buildClean
+elif ! $cmd_nocache && ! $cmd_clean; then
+    buildHelper
+    build
+fi
+

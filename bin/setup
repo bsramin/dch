@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# @author Ramin Banihashemi <a@ramin.it>
+
+bashfile="$(basename ${BASH_SOURCE:-${0}})"
+source lib/setup/main.sh
+
+#------------------------------------
+
+function setupHelper {
+    show "<red>--------------------------------</red>"
+    show "<red>DCH <b>$bashfile</b></red> <light-red>v$version</light-red>"
+    show "<red>--------------------------------</red>"
+    show "<cyan>Use:</cyan>"
+    show "bin/$bashfile [cmd] ([container_hostname])"
+    show ""
+
+    show "<cyan>Commands:</cyan>"
+
+    showHelper "<green>clean</green>" "Delete all untagged images"
+    showHelper "<green>kill</green>" "Delete all containers stopped/no longer used"
+    showHelper "<green>rm</green>" "Delete an image (use 'all' for all)"
+    showHelper "<green>create-network</green>" "Create reverse proxy network"
+    showHelper "<green>delete-newtwork</green>" "Delete reverse proxy network"
+    show ""
+}
+
+# Elimino tutte le immagini non taggate
+function cleanAll {
+    show "Delete <red>alls</red> untagged images? [N/y]"
+    read -n 1 REPLY
+    show ""
+    if test "$REPLY" = "y" -o "$REPLY" = "Y"; then
+        containerstodelete=$(docker images -q -a -f "dangling=true")
+        if [ -z ${containerstodelete} ]; then
+            show "<red>✗ No images to remove</red>"
+        else
+            execute "docker rmi -f $containerstodelete"
+        fi
+        show "<green>✓ Done</green>";
+    else
+        show "<red>✗ Aborted</red>"
+    fi
+}
+
+# Cancello una singola immagine
+function delete {
+    getContainer
+    if [ -n "$container" ]; then
+        execute "docker rm -f $container"
+        show "<green>✓ Done</green>";
+    else
+        show "<red>✗ No containers to remove</red>";
+    fi
+    cleanAll
+}
+
+# Cancello tutte le immagini
+function deleteAll {
+    show "Delete <red>all</red> the images? [N/y] "
+    read -n 1 REPLY
+    show ""
+    if test "$REPLY" = "y" -o "$REPLY" = "Y"; then
+        allcontainers=$(docker ps | grep $docker_namespace | awk '{ print $1 }' )
+        if [ -z $allcontainers ]; then
+            show "<red>✗ No containers to remove</red>";
+        else
+            execute "docker rm -f $allcontainers"
+        fi
+
+        allimages=$(docker images | grep $docker_namespace | awk '{ print $3 }' )
+        if [ -z $allimages ]; then
+            show "<red>✗ No images to remove</red>"
+        else
+            execute "docker rmi -f $allimages"
+        fi
+        show "<green>✓ Done</green>";
+    else
+      show "<red>✗ Aborted</red>"
+    fi
+}
+
+case "$cmd" in
+'create-network')
+    createReverseNetwork
+    ;;
+'delete-network')
+    deleteReverseNetwork
+    ;;
+'clean')
+    cleanAll
+    ;;
+'kill')
+    killContainer
+    ;;
+'rm')
+    setImageName $2
+    if [[ ${image_name} == '' ]]; then
+        show "\n<red>Specify a correct image name or write 'all' for all</red>\n";
+    elif [[ ${image_name} != 'all' && ${image_name} != '' ]]; then
+        show "<yellow>Delete <b>${image_name}</b></yellow>"
+        delete ${image_name}
+    else
+        show "<yellow>Delete all images in '${docker_namespace}'</yellow>";
+        deleteAll
+    fi
+    ;;
+*)
+    setupHelper
+    ;;
+esac

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# @author Ramin Banihashemi <a@ramin.it>
+
+bashfile="$(basename ${BASH_SOURCE:-${0}})"
+source lib/setup/main.sh
+
+#------------------------------------
+
+function downHelper {
+    show "<red>---------------------------------</red>"
+    show "<red>DCH <b>$bashfile</b></red> <light-red>v$version</light-red>"
+    show "<red>---------------------------------</red>"
+    show "<cyan>Use:</cyan>"
+    show "bin/$bashfile [--kill]\n"
+
+    show "<cyan>Options:</cyan>"
+    showHelper "<green>-h --help</green>" "This help!"
+    showHelper "<green>-k --kill</green>" "Remove all the generated containers"
+    show ""
+}
+
+for arg in "$@"; do
+    shift
+    case "$arg" in
+        "--help")           set -- "$@" "-h" ;;
+        "--kill")           set -- "$@" "-k" ;;
+        *)                  set -- "$@" "$arg"
+    esac
+done
+
+kill=
+
+OPTIND=1
+while getopts "hk" opt
+do
+    case "$opt" in
+        h ) downHelper; exit 0 ;;
+        k ) kill=1; ;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
+goDown
+
+if [ "${kill}" == 1 ]; then
+    killContainer
+    deleteNetwork
+fi

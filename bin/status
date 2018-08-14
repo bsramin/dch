@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# @author Ramin Banihashemi <a@ramin.it>
+
+bashfile="$(basename ${BASH_SOURCE:-${0}})"
+source lib/setup/main.sh
+
+#------------------------------------
+
+function statusHelper {
+    show "<red>---------------------------------</red>"
+    show "<red>DCH <b>$bashfile</b></red> <light-red>v$version</light-red>"
+    show "<red>---------------------------------</red>"
+    show "<cyan>Use:</cyan>"
+    show "bin/$bashfile [cmd]\n"
+
+    show "<cyan>Commands:</cyan>"
+
+    showHelper "<green>images</green>" "List images in '${docker_namespace}'"
+    showHelper "<green>ps</green>" "List active containers in '${docker_namespace}'"
+    showHelper "<green>logs</green>" "Fetch the logs of the containers in '${docker_namespace}'"
+    show ""
+}
+
+# Visualizzo tutte le immagini
+function viewImages {
+    execute "docker images | awk 'NR==1 || /$docker_namespace/'"
+}
+
+# Visualizzo i log in realtime dei containers
+function viewLogs {
+    execute "docker-compose $composefiles --project-name $docker_namespace logs"
+}
+
+case "$cmd" in
+'logs')
+    viewLogs
+    ;;
+'images')
+    viewImages
+    ;;
+'ps')
+    viewPs
+    ;;
+*)
+    statusHelper
+    viewPs
+    ;;
+esac

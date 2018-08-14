@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# @author Ramin Banihashemi <a@ramin.it>
+
+bashfile="$(basename ${BASH_SOURCE:-${0}})"
+source lib/setup/main.sh
+
+#------------------------------------
+
+function runHelper {
+    show "<red>---------------------------------</red>"
+    show "<red>DCH <b>$bashfile</b></red> <light-red>v$version</light-red>"
+    show "<red>---------------------------------</red>"
+    show "<cyan>Use:</cyan>"
+    show "bin/$bashfile [(container_hostname)]\n\n"
+}
+
+if [ -z "$1" ]; then
+    runHelper
+    show "<yellow>Select one from them:</yellow>";
+    dockerhostname
+    exit
+fi
+
+if [[ $1 != 'all' && $1 != '' ]]; then
+    setImageName $1
+    if [ -n "$container_name" ]; then
+        execute "docker-compose $composefiles --project-name $docker_namespace restart $container_name"
+    fi
+else
+    goDown
+    goUp
+fi

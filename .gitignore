@@ -1,0 +1,5 @@
+project/.env
+.DS_Store
+/.idea
+/project/*
+!/project/.gitkeep
