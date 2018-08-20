@@ -18,6 +18,7 @@ function statusHelper {
     showHelper "<green>images</green>" "List images in '${docker_namespace}'"
     showHelper "<green>ps</green>" "List active containers in '${docker_namespace}'"
     showHelper "<green>logs</green>" "Fetch the logs of the containers in '${docker_namespace}'"
+    showHelper "<green>stats</green>" "Display a live stream of '${docker_namespace}' containers resource usage statistics"
     show ""
 }
 
@@ -31,6 +32,12 @@ function viewLogs {
     execute "docker-compose $composefiles --project-name $docker_namespace logs"
 }
 
+# Visualizzo le stats dei container
+function viewStats {
+    execute "docker stats $(docker ps --format '{{.Names}}' | grep ${docker_namespace} | tr '\n' '\t')"
+}
+
+
 case "$cmd" in
 'logs')
     viewLogs
@@ -40,6 +47,9 @@ case "$cmd" in
     ;;
 'ps')
     viewPs
+    ;;
+'stats')
+    viewStats
     ;;
 *)
     statusHelper
