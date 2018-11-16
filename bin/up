@@ -17,6 +17,7 @@ function upHelper {
 
     showHelper "<green>-h --help</green>" "This help!"
     showHelper "<green>-n --no-upgrade</green>" "Start the containers without checking new versions of them"
+    showHelper "<green>-r --with-reverse</green>" "Start with the reverse proxy"
     show ""
 }
 
@@ -25,20 +26,23 @@ for arg in "$@"; do
     case "$arg" in
         "--help")           set -- "$@" "-h" ;;
         "--no-upgrade")     set -- "$@" "-n" ;;
+        "--with-reverse")   set -- "$@" "-r" ;;
         *)                  set -- "$@" "$arg"
     esac
 done
 
-noupgrade=
+noupgrade=0
+withreverse=0
 
 OPTIND=1
-while getopts "hn" opt
+while getopts "hnr" opt
 do
     case "$opt" in
         h ) upHelper; exit 0 ;;
+        r ) withreverse=1; ;;
         n ) noupgrade=1; ;;
     esac
 done
 shift $(expr $OPTIND - 1)
 
-goUp $noupgrade
+goUp $noupgrade $withreverse

@@ -75,13 +75,13 @@ function deleteReverseNetwork() {
 
 # Avvio il reverse proxy
 function startReverseProxy() {
-    checkcontainer=$(docker ps | grep ${networkproxy})
-    if [[ -z "$checkcontainer" ]]; then
-        show "<yellow>Start the reverse proxy</yellow>";
-        execute "docker run --name ${networkproxy} -d -p 80:80 -p 443:443 -v /var/run/docker.sock:/tmp/docker.sock -t --net ${networkproxy} jwilder/nginx-proxy"
-    else
-        show "<yellow>Reverse proxy ${networkproxy} già avviato</yellow>";
+    checkcontainer=$(docker ps --all | grep ${networkproxy})
+    if [[ -n "$checkcontainer" ]]; then
+        stopReverseProxy
     fi
+
+    show "<yellow>Start the reverse proxy</yellow>";
+    execute "docker run --name ${networkproxy} -d -p 80:80 -p 443:443 -v /var/run/docker.sock:/tmp/docker.sock -t --net ${networkproxy} jwilder/nginx-proxy";
 }
 
 # Fermo il reverse proxy
@@ -105,20 +105,25 @@ function deleteNetwork() {
 
 # Avvio i container
 function goUp() {
-    show "<yellow>Starting the containers</yellow>";
 
-    createReverseNetwork
+    if [ -n "$2" ] && [ "$2" == "1" ]; then
+        createReverseNetwork
+    fi
 
     if [ -z "$1" ] || [ "$1" != "1" ]; then
         # Scarico le ultime immagini
+        show "<yellow>Pull and build latest images</yellow>";
         execute "docker-compose ${composefiles} --project-name ${docker_namespace} pull"
         execute "docker-compose ${composefiles} --project-name ${docker_namespace} build --pull"
     fi
 
     # Avvio le immagini
+    show "<yellow>Starting the containers</yellow>";
     execute "docker-compose ${composefiles} --project-name ${docker_namespace} up --remove-orphans -d"
 
-    startReverseProxy
+    if [ -n "$2" ] && [ "$2" == "1" ]; then
+        startReverseProxy
+    fi
 
     viewPs
     show "<green>✓ Done</green>";

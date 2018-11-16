@@ -97,6 +97,7 @@ And restart the service
     sudo /etc/init.d/dnsmasq restart
     
 ### Reverse proxy
+##### (optional)
 
 DCH includes an automatic reverse proxy service (thanks to [jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy)) to be able to work with multiple domains, on multiple containers/domains of DCH and always keeping port 80 (which automatically redirects to the actual container port, different from 80).
 
@@ -124,6 +125,8 @@ environment:
   - VIRTUAL_HOST=${APP_HOST}
   - VIRTUAL_PORT=[service exposed port, For example: in "ports: 8080:80" write "80" here]
 ```
+
+and then start with `bin/up -r` command.
 
 You can also use it on multiple services at the same time, remembering to do the above for everyone
 
