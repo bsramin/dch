@@ -16,6 +16,7 @@ function setupHelper {
 
     show "<cyan>Commands:</cyan>"
 
+    showHelper "<green>prune</green>" "Clean all stopped containers, networks not used by at least one container, dangling images and dangling build cache"
     showHelper "<green>clean</green>" "Delete all untagged images"
     showHelper "<green>kill</green>" "Delete all containers stopped/no longer used"
     showHelper "<green>rm</green>" "Delete an image (use 'all' for all)"
@@ -52,6 +53,12 @@ function delete {
         show "<red>✗ No containers to remove</red>";
     fi
     cleanAll
+}
+
+# Prune!
+function prune {
+    execute "docker system prune"
+    show "<green>✓ Done</green>";
 }
 
 # Cancello tutte le immagini
@@ -91,6 +98,9 @@ case "$cmd" in
     ;;
 'kill')
     killContainer
+    ;;
+'prune')
+    prune
     ;;
 'rm')
     setImageName $2
