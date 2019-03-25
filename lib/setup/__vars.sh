@@ -10,8 +10,14 @@ image_name=$2
 base_dir="$( cd $(dirname "${BASH_SOURCE:-${0}}")"/../.." && pwd )"
 docker_namespace=$(basename "${base_dir}")
 
+composefiles=" --file ${base_dir}/project/docker-compose.yml"
+
 if [ $OS != "Darwin" ]; then
-    composefiles=" --file ${base_dir}/project/docker-compose.yml --file ${base_dir}/project/docker-compose.linux.yml"
+    if [ -f ${base_dir}/project/docker-compose.linux.yml ]; then
+        composefiles="${composefiles} --file ${base_dir}/project/docker-compose.linux.yml"
+    fi
 else
-    composefiles=" --file ${base_dir}/project/docker-compose.yml --file ${base_dir}/project/docker-compose.macos.yml"
+    if [ -f ${base_dir}/project/docker-compose.macos.yml ]; then
+        composefiles="${composefiles} --file ${base_dir}/project/docker-compose.macos.yml"
+    fi
 fi
