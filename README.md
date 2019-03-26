@@ -132,7 +132,7 @@ You can also use it on multiple services at the same time, remembering to do the
 
 ## SAMPLE
 
-Look at the [example project](https://github.com/feries/dch-project-sample) (LEMP Stack).
+Look at the [example project](https://github.com/bsramin/dch-project-sample) (LEMP Stack).
 
 # LICENSE
     
