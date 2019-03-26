@@ -138,7 +138,7 @@ Look at the [example project](https://github.com/feries/dch-project-sample) (LEM
     
 The MIT License (MIT)
 
-Copyright (c) 2018 Feries S.r.l.
+Copyright (c) 2018 Ramin Banihashemi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
