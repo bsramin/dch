@@ -30,6 +30,8 @@ The commands available for the management of containers are:
 
 To bypass the problem of slow volumes shared with osxfs, Docker 18.03.0-ce-mac59 has implemented the possibility of sharing with NFS.
 
+**NB:** Since the new version of MacOS Catalina (10.15), user volume was moved (apple call this *firmlinking*), you need to chose the right path, so please check your MacOS version and use the compatible script with your version.
+
 The NFS volume is declared in the file `docker-compose.yml` as follows
 
 ```
@@ -38,12 +40,21 @@ The NFS volume is declared in the file `docker-compose.yml` as follows
     driver_opts:
       type: nfs
       o: rw,async,noatime,rsize=32768,wsize=32768,proto=tcp,nfsvers=3,addr=host.docker.internal
+      # If you are running MacOS < 10.15
       device: ":${APP_PATH}"      
+      # If you are running MacOS >= 10.15
+      # device: ':/System/Volumes/Data${APP_PATH}'
 ```
 
 To start the service on the host mac edit the file `/etc/exports` and adding the line
 
+If you are running MacOS < 10.15
+
 ```"/Users" localhost -alldirs -mapall=501:20```
+
+instead if you are running MacOS >= 10.15
+
+```"/System/Volumes/Data" -alldirs -mapall=501:20 localhost```
 
 Add this line to the `/etc/nfs.conf` file:
 
